@@ -1,5 +1,9 @@
 name: CI Pipeline
 
+permissions:
+    contents: write # Erlaubt das Schreiben von Commits und Tags
+    issues: write # Erlaubt das Erstellen von Issues und Labels, falls nötig
+
 on:
     push:
         branches:
@@ -34,7 +38,6 @@ jobs:
               run: npm test
 
     release:
-        # Nur beim Push auf main ausführen
         if: github.event_name == 'push' && contains(github.ref, 'refs/heads/main')
         runs-on: ubuntu-latest
         needs: lint-format-test
