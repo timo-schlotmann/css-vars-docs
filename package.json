@@ -2,23 +2,27 @@
     "name": "css-vars-docs",
     "version": "0.0.0",
     "description": "Generates a comment block with all CSS variables from the specified file to improve readability and provide documentation. The block is added at the beginning of the file, or in the first <style> block for non-CSS files, if available.",
-    "main": "lib/cli.cjs",
+    "main": "dist/cli.cjs",
     "bin": {
-        "css-vars-docs": "lib/cli.cjs",
-        "cssvarsdocs": "lib/cli.cjs",
-        "cssvd": "lib/cli.cjs"
+        "css-vars-docs": "dist/cli.cjs",
+        "cssvarsdocs": "dist/cli.cjs",
+        "cssvd": "dist/cli.cjs"
     },
     "exports": {
-        ".": "./lib/cli.cjs",
-        "./postcss-plugin": "./lib/postcss.cjs",
-        "./cli": "./lib/cli.cjs"
+        ".": "./dist/cli.cjs",
+        "./postcss-plugin": "./dist/postcss.cjs",
+        "./cli": "./dist/cli.cjs"
     },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "dev": "chokidar 'lib/*' -c 'npm run build'",
-        "build": "npm run build:clear && npm run build:copy && npm run build:uglify",
+        "build": "npm run build:clear && npm run build:uglify",
         "build:clear": "rimraf dist",
-        "build:copy": "mkdir -p dist && copyfiles lib/* package.json README.md LICENSE dist/",
-        "build:uglify": "uglifyjs dist/lib/css-vars-docs.cjs -o dist/lib/css-vars-docs.cjs --mangle --compress && uglifyjs dist/lib/cli.cjs -o dist/lib/cli.cjs --mangle --compress && uglifyjs dist/lib/postcss.cjs -o dist/lib/postcss.cjs --mangle --compress",
+        "build:uglify": "mkdir -p dist && uglifyjs lib/css-vars-docs.cjs -o dist/css-vars-docs.cjs --mangle --compress && uglifyjs lib/cli.cjs -o dist/cli.cjs --mangle --compress && uglifyjs lib/postcss.cjs -o dist/postcss.cjs --mangle --compress",
         "test": "jest",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
