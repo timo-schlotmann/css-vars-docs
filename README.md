@@ -30,7 +30,7 @@ pnpm add -g css-vars-docs
 
 ## Usage
 
-**Without Installation:**
+### Without Installation (Using `npx` or `pnpx`):
 
 ```sh
 npx css-vars-docs [options]
@@ -42,7 +42,18 @@ or
 pnpx css-vars-docs [options]
 ```
 
-### With Global Installation or as a Dependency:
+### With Local Installation (Using `npm run` or `pnpm`):
+
+After installation as a project dependency (`-D`), you can run it as follows:
+
+```sh
+npx css-vars-docs [options]  # npm project
+pnpm css-vars-docs [options] # pnpm project
+```
+
+### With Global Installation:
+
+When installed globally, use any of the following commands:
 
 ```sh
 css-vars-docs [options]
@@ -111,6 +122,12 @@ or
 css-vars-docs
 ```
 
+For a test run, simply pass `-p` or `--preview`
+
+```sh
+npx css-vars-docs -p
+```
+
 ## More Examples
 
 Process a specific file, `style.css`:
@@ -158,8 +175,7 @@ const cssVarsDocs = require('css-vars-docs');
 module.exports = {
     plugins: [
         cssVarsDocs({
-            logLevel: 3,
-            preview: true // Use `preview` to see affected files without modifying them
+            logLevel: 3
         })
         // other plugins
     ]
