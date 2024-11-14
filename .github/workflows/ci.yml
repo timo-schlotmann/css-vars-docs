@@ -37,6 +37,9 @@ jobs:
             - name: Run Tests
               run: npm test
 
+            - name: Build project
+              run: npm run build
+
     release:
         if: github.event_name == 'push' && contains(github.ref, 'refs/heads/main')
         runs-on: ubuntu-latest
