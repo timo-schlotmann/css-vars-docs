@@ -10,7 +10,12 @@
     },
     "exports": {
         ".": "./dist/cli.cjs",
-        "./postcss-plugin": "./dist/postcss.cjs",
+        "./postcss-plugin": "./dist/postcss-plugin.cjs",
+        "./vite-plugin": {
+            "require": "./dist/vite-plugin.cjs",
+            "types": "./dist/vite-plugin.d.ts"
+        },
+        "./css-vars-docs": "./dist/css-vars-docs.cjs",
         "./cli": "./dist/cli.cjs"
     },
     "files": [
@@ -21,9 +26,9 @@
     ],
     "scripts": {
         "dev": "chokidar 'lib/*' -c 'npm run build'",
-        "build": "npm run build:clear && npm run build:uglify",
+        "build": "npm run build:clear && npm run build:uglify && copyfiles -u 1 lib/*.d.ts dist/",
         "build:clear": "rimraf dist",
-        "build:uglify": "mkdir -p dist && uglifyjs lib/css-vars-docs.cjs -o dist/css-vars-docs.cjs --mangle --compress && uglifyjs lib/cli.cjs -o dist/cli.cjs --mangle --compress && uglifyjs lib/postcss.cjs -o dist/postcss.cjs --mangle --compress",
+        "build:uglify": "mkdir -p dist && uglifyjs lib/css-vars-docs.cjs -o dist/css-vars-docs.cjs --mangle --compress && uglifyjs lib/cli.cjs -o dist/cli.cjs --mangle --compress && uglifyjs lib/postcss-plugin.cjs -o dist/postcss-plugin.cjs --mangle --compress && uglifyjs lib/vite-plugin.cjs -o dist/vite-plugin.cjs --mangle --compress",
         "test": "jest",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
