@@ -170,7 +170,7 @@ css-vars-docs -r -ll 3
 
 ```javascript
 // postcss.config.js
-const cssVarsDocs = require('css-vars-docs');
+const cssVarsDocs = require('css-vars-docs/postcss-plugin');
 
 module.exports = {
     plugins: [
@@ -185,13 +185,36 @@ module.exports = {
 ## Example of using in your code
 
 ```javascript
-const CssVarsDocs = require('css-vars-docs');
+const CssVarsDocs = require('css-vars-docs/css-vars-docs');
 
 const cssVarsDocs = new CssVarsDocs({
     // options
 });
 
 cssVarsDocs.processFiles();
+```
+
+## Example of using the Vite plugin
+
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import cssVarsDocsVite from 'css-vars-docs/vite-plugin';
+
+export default defineConfig({
+    plugins: [
+        vue(),
+        cssVarsDocsVite({
+            delay: 200, // Delay in milliseconds between file processing
+            extensions: ['.css', '.vue'], // File extensions to watch
+            config: {
+                logLevel: 0,
+                loadConfig: false
+            }
+        })
+    ]
+});
 ```
 
 ## License
