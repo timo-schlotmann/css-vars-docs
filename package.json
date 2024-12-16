@@ -13,6 +13,7 @@
         "./postcss-plugin": "./dist/postcss-plugin.cjs",
         "./vite-plugin": {
             "require": "./dist/vite-plugin.cjs",
+            "default": "./dist/vite-plugin.cjs",
             "types": "./dist/vite-plugin.d.ts"
         },
         "./css-vars-docs": "./dist/css-vars-docs.cjs",
