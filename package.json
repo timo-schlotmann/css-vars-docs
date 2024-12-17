@@ -52,7 +52,6 @@
     },
     "dependencies": {
         "commander": "12.1.0",
-        "cross-spawn": "^7.0.6",
         "glob": "11.0.0"
     },
     "peerDependencies": {
