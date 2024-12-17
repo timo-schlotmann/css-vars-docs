@@ -89,13 +89,16 @@ export class CssVarsDocs {
     private async loadConfig(): Promise<void> {
         for (const configFileName of this.possibleConfigFiles) {
             const configFilePath = path.resolve(process.cwd(), configFileName);
+
             if (fs.existsSync(configFilePath)) {
                 try {
-                    const fileConfig = configFilePath.endsWith('.cjs')
-                        ? require(configFilePath)
-                        : await import(configFilePath);
+                    let fileConfig: Partial<CssVarsDocsConfig> = {};
 
-                    this.config = { ...this.config, ...(fileConfig.default || fileConfig) };
+                    // Always use dynamic import to support ESM and CJS
+                    const module = await import(configFilePath);
+                    fileConfig = module.default || module;
+
+                    this.config = { ...this.config, ...fileConfig };
                     this.log(2, `Custom configuration loaded from ${configFileName}.`);
                     return;
                 } catch (err) {

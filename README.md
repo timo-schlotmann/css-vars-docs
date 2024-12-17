@@ -93,21 +93,39 @@ css-vars-docs [options]
 
 ## Configuration Files
 
-The CLI **requires a CJS configuration file** (`.cjs`). Other formats (`.js` and `.mjs`) can be used when importing `CssVarsDocs` programmatically or via plugins like PostCSS or Vite.
+`css-vars-docs` supports multiple configuration file formats out of the box. You can use the same configuration file for both CLI and programmatic usage, regardless of the module system (CommonJS or ESM).
 
 **Supported Files**:
 
--   **CLI**: `css-vars-docs.config.cjs`
--   **Programmatic Usage (ESM)**: `css-vars-docs.config.mjs`
--   **Default/Hybrid**: `css-vars-docs.config.js` (interpreted based on the environment)
+| File Format                | Description                                                             |
+| -------------------------- | ----------------------------------------------------------------------- |
+| `css-vars-docs.config.cjs` | CommonJS configuration file.                                            |
+| `css-vars-docs.config.mjs` | ES Module configuration file.                                           |
+| `css-vars-docs.config.js`  | Automatically interpreted as CommonJS or ESM based on your environment. |
 
-### Example Config (for CLI - `css-vars-docs.config.cjs`):
+### Example Configuration Files
 
-```javascript
+#### CommonJS (`css-vars-docs.config.cjs`)
+
+```js
 module.exports = {
     indent: '    ',
     files: ['src/**/*.css', 'src/**/*.vue'],
-    logLevel: 2
+    logLevel: 2,
+    newLinesBeforeGroup: true,
+    preview: false
+};
+```
+
+#### ES Module (`css-vars-docs.config.mjs`)
+
+```js
+export default {
+    indent: '    ',
+    files: ['src/**/*.css', 'src/**/*.vue'],
+    logLevel: 2,
+    newLinesBeforeGroup: true,
+    preview: false
 };
 ```
 

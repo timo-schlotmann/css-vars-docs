@@ -1,8 +1,9 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "module": "CommonJS",
-        "outDir": "./dist/cjs"
+        "module": "NodeNext",
+        "outDir": "./dist/cjs",
+        "moduleResolution": "NodeNext"
     },
     "include": ["lib/**/*.ts"],
     "exclude": ["node_modules", "dist"]

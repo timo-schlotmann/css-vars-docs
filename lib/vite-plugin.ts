@@ -1,5 +1,4 @@
-import { CssVarsDocs, type CssVarsDocsOptions } from './css-vars-docs'; // Import the CssVarsDocs class
-import type { Plugin, ViteDevServer } from 'vite';
+import { CssVarsDocs, type CssVarsDocsOptions } from './css-vars-docs';
 
 interface CssVarsDocsViteOptions {
     delay?: number; // Delay between processing the same file (in milliseconds)
@@ -7,7 +6,7 @@ interface CssVarsDocsViteOptions {
     config?: CssVarsDocsOptions; // Configuration options for css-vars-docs
 }
 
-export default function cssVarsDocsVite(userOptions: CssVarsDocsViteOptions = {}): Plugin {
+export default function cssVarsDocsVite(userOptions: CssVarsDocsViteOptions = {}): any {
     const defaultOptions: CssVarsDocsViteOptions = {
         delay: 200,
         extensions: ['.css', '.scss', '.less', '.vue', '.html'],
@@ -21,7 +20,7 @@ export default function cssVarsDocsVite(userOptions: CssVarsDocsViteOptions = {}
         name: 'css-vars-docs',
         apply: 'serve',
 
-        async handleHotUpdate({ file, server }: { file: string; server: ViteDevServer }) {
+        async handleHotUpdate({ file, server }: { file: string; server: any }) {
             // Skip files that do not match the allowed extensions
             if (options.extensions && !options.extensions.some((ext) => file.endsWith(ext))) {
                 return;

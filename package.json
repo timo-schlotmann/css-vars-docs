@@ -18,15 +18,18 @@
         },
         "./cli": {
             "import": "./dist/esm/cli.mjs",
-            "require": "./dist/cjs/cli.cjs"
+            "require": "./dist/cjs/cli.cjs",
+            "types": "./dist/cjs/css-vars-docs.d.ts"
         },
         "./postcss-plugin": {
             "import": "./dist/esm/postcss-plugin.mjs",
-            "require": "./dist/cjs/postcss-plugin.cjs"
+            "require": "./dist/cjs/postcss-plugin.cjs",
+            "types": "./dist/cjs/postcss-plugin.d.ts"
         },
         "./vite-plugin": {
             "import": "./dist/esm/vite-plugin.mjs",
-            "require": "./dist/cjs/vite-plugin.cjs"
+            "require": "./dist/cjs/vite-plugin.cjs",
+            "types": "./dist/cjs/vite-plugin.d.ts"
         }
     },
     "files": [
@@ -74,8 +77,7 @@
         "semantic-release": "24.2.0",
         "ts-jest": "^29.2.5",
         "typescript": "5.7.2",
-        "uglify-js": "3.19.3",
-        "vite": "6.0.3"
+        "uglify-js": "3.19.3"
     },
     "keywords": [
         "css",
