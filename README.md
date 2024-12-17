@@ -1,175 +1,123 @@
 # CssVarsDocs
 
-Generates a comment block with all CSS variables from the specified file to improve readability and provide documentation. The block is added at the beginning of the file, or in the first `<style>` block for non-CSS files if available.
+**CssVarsDocs** generates a comment block containing all CSS variables from a specified file to improve readability and provide automatic documentation. Comments are added at the beginning of CSS files or inside `<style>` blocks for non-CSS files (e.g., HTML or Vue).
 
-## Installation (not required when using `npx` or `pnpx`)
+---
 
-**As a Project Dependency:**
+## Features
+
+-   CLI Tool for direct file modification
+-   Supports PostCSS and Vite as plugins
+-   Compatible with CommonJS and ES Modules (Dual Output)
+-   Flexible configuration via CLI options or configuration files
+
+---
+
+## Installation
+
+### Use without Installation (`npx`/`pnpx`)
+
+```sh
+npx css-vars-docs [options]
+pnpx css-vars-docs [options]
+```
+
+### Install Locally (as a Dev Dependency)
 
 ```sh
 npm install -D css-vars-docs
-```
-
-or
-
-```sh
 pnpm add -D css-vars-docs
 ```
 
-**Global Installation:**
+### Install Globally
 
 ```sh
 npm install -g css-vars-docs
 ```
 
-or
-
-```sh
-pnpm add -g css-vars-docs
-```
+---
 
 ## Usage
 
-### Without Installation (Using `npx` or `pnpx`):
+### CLI Usage
+
+Run the CLI directly:
 
 ```sh
 npx css-vars-docs [options]
 ```
 
-or
-
-```sh
-pnpx css-vars-docs [options]
-```
-
-### With Local Installation (Using `npm run` or `pnpm`):
-
-After installation as a project dependency (`-D`), you can run it as follows:
-
-```sh
-npx css-vars-docs [options]  # npm project
-pnpm css-vars-docs [options] # pnpm project
-```
-
-### With Global Installation:
-
-When installed globally, use any of the following commands:
+Or globally:
 
 ```sh
 css-vars-docs [options]
-cssvarsdocs [options]
-cssvd [options]
 ```
 
-## Available Options for the CLI
+### Example Commands
 
-| Option                                | Description                                                                                 |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `-f, --files <files>`                 | Files to process, separated by spaces or commas                                             |
-| `-n, --new-lines-before-group`        | Add a new line between variable groups                                                      |
-| `-t, --title <title>`                 | Header for the comment block                                                                |
-| `-b, --block-identifier <identifier>` | Unique identifier for generated blocks                                                      |
-| `-i, --indent <indent>`               | Default indentation                                                                         |
-| `-is, --indent-style`                 | Add extra indentation in `<style>` blocks                                                   |
-| `-ex, --exclude-node-modules`         | Exclude `node_modules` by default                                                           |
-| `-lc, --load-config`                  | Boolean. Set to `false` to ignore configuration files (default: `true`, loads if available) |
-| `-lp, --log-prefix <prefix>`          | Prefix for log messages                                                                     |
-| `-ll, --log-level <level>`            | Log level: `0` = errors only, `1` = changes only, `2` = verbose, `3` = debug                |
-| `-r, --remove`                        | Remove existing comments from the files                                                     |
-| `-p, --preview`                       | Perform a dry run without writing to files                                                  |
+1. Process specific files:
+
+    ```sh
+    css-vars-docs -f "src/**/*.css"
+    ```
+
+2. Run a dry run (no file changes):
+
+    ```sh
+    css-vars-docs --preview
+    ```
+
+3. Remove comments:
+    ```sh
+    css-vars-docs --remove
+    ```
+
+### CLI Options
+
+| Option                                | Description                                                        |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| `-f, --files <files>`                 | Files to process, separated by spaces or commas                    |
+| `-r, --remove`                        | Remove existing comments from the files                            |
+| `-p, --preview`                       | Dry run: show changes without writing to files                     |
+| `-t, --title <title>`                 | Header for the comment block                                       |
+| `-b, --block-identifier <identifier>` | Unique identifier for generated blocks                             |
+| `-i, --indent <indent>`               | Default indentation                                                |
+| `-is, --indent-style`                 | Add extra indentation in `<style>` blocks                          |
+| `-ex, --exclude-node-modules`         | Exclude `node_modules` by default                                  |
+| `-n, --new-lines-before-group`        | Add a new line between variable groups                             |
+| `-lp, --log-prefix <prefix>`          | Prefix for log messages                                            |
+| `-ll, --log-level <level>`            | Log level: `0` = errors, `1` = changes, `2` = verbose, `3` = debug |
+| `-lc, --load-config`                  | Load config file: `true` (default) or `false`                      |
 
 ---
 
-## Configuration
+## Configuration Files
 
-**CssVarsDocs** uses a default configuration to process files. This configuration can be customized using CLI options, or by creating a configuration file in the root directory of the project, allowing default configuration overrides to be retained across runs without the need to pass additional options.
+The CLI **requires a CJS configuration file** (`.cjs`). Other formats (`.js` and `.mjs`) can be used when importing `CssVarsDocs` programmatically or via plugins like PostCSS or Vite.
 
-**Supported Configuration File Names:**
+**Supported Files**:
 
-```sh
-css-vars-docs.config.{js,mjs,cjs}
-cssvarsdocs.config.{js,mjs,cjs}
-cssvd.config.{js,mjs,cjs}
-```
+-   **CLI**: `css-vars-docs.config.cjs`
+-   **Programmatic Usage (ESM)**: `css-vars-docs.config.mjs`
+-   **Default/Hybrid**: `css-vars-docs.config.js` (interpreted based on the environment)
 
-**Configuration hierarchy:**
-
-1. Default settings
-2. Configuration file (if present)
-3. CLI options (highest priority)
-
-## Example of using a configuration file
-
-Create a configuration file, for example `css-vars-docs.config.mjs`:
+### Example Config (for CLI - `css-vars-docs.config.cjs`):
 
 ```javascript
-export default {
+module.exports = {
     indent: '    ',
-    files: ['src/assets/*.css', 'src/assets/*.scss', 'src/*.html'],
-    logLevel: 0
+    files: ['src/**/*.css', 'src/**/*.vue'],
+    logLevel: 2
 };
 ```
 
-Run the command without additional arguments:
+---
 
-```sh
-npx css-vars-docs
-```
+## PostCSS Config
 
-or
-
-```sh
-css-vars-docs
-```
-
-For a test run, simply pass `-p` or `--preview`
-
-```sh
-npx css-vars-docs -p
-```
-
-## More Examples
-
-Process a specific file, `style.css`:
-
-```sh
-css-vars-docs -f style.css
-```
-
-Process all `.css` files in the `assets` directory:
-
-```sh
-css-vars-docs -f assets/**/*.css
-```
-
-Process all `.css` files in `assets` with `logLevel` set to 3:
-
-```sh
-css-vars-docs -f assets/**/*.css -ll 3
-```
-
-Process all `.css` files in `assets` and all `.vue` files in `components`:
-
-```sh
-css-vars-docs -f "assets/**/*.css,components/*.vue"
-```
-
-Process all files with `logLevel` 3:
-
-```sh
-css-vars-docs -ll 3
-```
-
-Remove comments from all files with `logLevel` 3:
-
-```sh
-css-vars-docs -r -ll 3
-```
-
-## Example of using the Postcss plugin
+**PostCSS Config:**
 
 ```javascript
-// postcss.config.js
 const cssVarsDocs = require('css-vars-docs/postcss-plugin');
 
 module.exports = {
@@ -177,50 +125,80 @@ module.exports = {
         cssVarsDocs({
             logLevel: 3
         })
-        // other plugins
     ]
 };
 ```
 
-## Example of using in your code
+---
+
+## Vite Config
+
+**Vite Config:**
 
 ```javascript
-const CssVarsDocs = require('css-vars-docs/css-vars-docs');
-
-const cssVarsDocs = new CssVarsDocs({
-    // options
-});
-
-cssVarsDocs.processFiles();
-```
-
-## Example of using the Vite plugin
-
-```javascript
-// vite.config.js
 import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
 import cssVarsDocsVite from 'css-vars-docs/vite-plugin';
 
 export default defineConfig({
     plugins: [
-        vue(),
         cssVarsDocsVite({
-            delay: 200, // Delay in milliseconds between file processing
-            extensions: ['.css', '.vue'], // File extensions to watch
+            delay: 200, // Delay between file processing
+            extensions: ['.css', '.vue'], // Files to process
             config: {
-                logLevel: 0,
-                loadConfig: false
+                logLevel: 2,
+                preview: false
             }
         })
     ]
 });
 ```
 
+---
+
+## Programmatic Usage
+
+You can use `CssVarsDocs` directly in your Node.js scripts:
+
+```javascript
+import { CssVarsDocs } from 'css-vars-docs';
+
+const cssVarsDocs = new CssVarsDocs({
+    files: ['src/**/*.css'],
+    logLevel: 2
+});
+
+cssVarsDocs.processFiles();
+```
+
+---
+
+## Dual Output: ESM and CJS
+
+**Why Dual Output?**
+
+-   **ESM**: Modern JavaScript environments and bundlers (e.g., Vite, Rollup).
+-   **CJS**: Node.js CLI compatibility and legacy projects.
+
+Node.js automatically selects the correct format based on your environment.
+
+**Example Imports**:
+
+```javascript
+// ESM
+import { CssVarsDocs } from 'css-vars-docs';
+
+// CommonJS
+const { CssVarsDocs } = require('css-vars-docs');
+```
+
+---
+
 ## License
 
 This project is licensed under the MIT License.
 
+---
+
 ## Notes
 
-This tool modifies files directly, so please use with caution and consider committing your code beforehand if necessary.
+**This tool modifies files directly.** Use the `preview` option to test changes before applying them. Always consider committing your code before running file modifications.
