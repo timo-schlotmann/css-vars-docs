@@ -3,10 +3,12 @@
     "version": "0.0.0",
     "description": "Generates a comment block with all CSS variables from the specified file to improve readability and provide documentation. The block is added at the beginning of the file, or in the first <style> block for non-CSS files, if available.",
     "main": "dist/cli.cjs",
+    "module": "dist/esm/cli.mjs",
+    "types": "dist/cjs/cli.d.ts",
     "bin": {
-        "css-vars-docs": "dist/cli.cjs",
-        "cssvarsdocs": "dist/cli.cjs",
-        "cssvd": "dist/cli.cjs"
+        "css-vars-docs": "dist/cjs/cli.cjs",
+        "cssvarsdocs": "dist/cjs/cli.cjs",
+        "cssvd": "dist/cjs/cli.cjs"
     },
     "exports": {
         ".": {
@@ -34,13 +36,11 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "npm run build:clear && npm run build:cjs && npm run build:esm && npm run build:rename && npm run build:uglify",
+        "build": "npm run build:clear && npm run build:cjs && npm run build:esm && npm run build:fix-extensions && npm run build:uglify && copyfiles package.json dist",
         "build:clear": "rimraf dist",
         "build:cjs": "tsc -p tsconfig.cjs.json",
         "build:esm": "tsc -p tsconfig.esm.json",
-        "build:rename": "npm run rename:cjs && npm run rename:esm",
-        "rename:cjs": "find dist/cjs -name '*.js' -exec sh -c 'mv \"$1\" \"${1%.js}.cjs\"' _ {} \\;",
-        "rename:esm": "find dist/esm -name '*.js' -exec sh -c 'mv \"$1\" \"${1%.js}.mjs\"' _ {} \\;",
+        "build:fix-extensions": "node scripts/dual-extensions.js",
         "build:uglify": "npm run uglify:cjs && npm run uglify:esm",
         "uglify:cjs": "uglifyjs dist/cjs/css-vars-docs.cjs -o dist/cjs/css-vars-docs.cjs --mangle --compress && uglifyjs dist/cjs/cli.cjs -o dist/cjs/cli.cjs --mangle --compress && uglifyjs dist/cjs/postcss-plugin.cjs -o dist/cjs/postcss-plugin.cjs --mangle --compress && uglifyjs dist/cjs/vite-plugin.cjs -o dist/cjs/vite-plugin.cjs --mangle --compress",
         "uglify:esm": "uglifyjs dist/esm/css-vars-docs.mjs -o dist/esm/css-vars-docs.mjs --mangle --compress && uglifyjs dist/esm/cli.mjs -o dist/esm/cli.mjs --mangle --compress && uglifyjs dist/esm/postcss-plugin.mjs -o dist/esm/postcss-plugin.mjs --mangle --compress && uglifyjs dist/esm/vite-plugin.mjs -o dist/esm/vite-plugin.mjs --mangle --compress",
