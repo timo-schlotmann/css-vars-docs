@@ -1,62 +1,92 @@
-const path = require('path');
-const fs = require('fs');
-const { globSync } = require('glob');
+import * as path from 'path';
+import * as fs from 'fs';
+import { globSync } from 'glob';
 
-class CssVarsDocs {
-    // Default configuration settings
-    config = {
-        files: [], // Files to process
-        newLinesBeforeGroup: false, // Whether to add a new line between variable groups
-        title: 'Used Variables in this file:', // Header for the comment block
-        blockIdentifier: 'CssVarsDocs :: generated', // Unique identifier for generated blocks
-        logPrefix: 'CssVarsDocs :: ', // Prefix for log messages
-        indent: '', // Default indentation
-        indentStyle: true, // Whether to add extra indentation in <style> blocks
-        prefixRegex: /^--([^-\s]+)/, // Regex to capture variable prefixes
-        variableRegex: /--[\w-]+/g, // Regex to match CSS variables
-        styleBlockRegex: /<style[^>]*>([\s\S]*?)<\/style>/i, // Regex to match <style> blocks in non-CSS files
-        excludeNodeModules: true, // Exclude `node_modules` by default
-        loadConfig: true, // Allow to load configuration file
-        logLevel: 2, // 0 = errors only, 1 = changes only, 2 = verbose, 3 = debug
-        preview: false // Preview mode to show changes without writing to files (if LogLevel > 2 it will be set to minimum 2)
-    };
+export interface CssVarsDocsConfig {
+    files: string[];
+    newLinesBeforeGroup: boolean;
+    title: string;
+    blockIdentifier: string;
+    logPrefix: string;
+    indent: string;
+    indentStyle: boolean;
+    prefixRegex: RegExp;
+    variableRegex: RegExp;
+    styleBlockRegex: RegExp;
+    excludeNodeModules: boolean;
+    loadConfig: boolean;
+    logLevel: number;
+    preview: boolean;
+}
 
-    // Stores only the provided configuration from the constructor to override possible file-based config later
-    constructorConfig = {};
+export type CssVarsDocsOptions = Partial<CssVarsDocsConfig>;
 
-    // Possible configuration file names and extensions
-    baseConfigNames = ['css-vars-docs.config', 'cssvarsdocs.config', 'cssvd.config', 'cvd.config'];
-    extensions = ['js', 'cjs', 'mjs'];
+export type CommentBlock = {
+    blockStartIndex: number;
+    blockEndIndex: number;
+    existingCommentBlock: string;
+};
 
-    // Prepare all possible configuration file names
-    possibleConfigFiles = this.baseConfigNames.flatMap((base) =>
-        this.extensions.map((ext) => `${base}.${ext}`)
-    );
+export class CssVarsDocs {
+    private config: CssVarsDocsConfig;
+    private constructorConfig: Partial<CssVarsDocsConfig> = {};
 
-    constructor(config = {}) {
-        // Override default config with provided settings
-        this.config = { ...this.config, ...config };
+    // Possible configuration file names
+    private baseConfigNames = [
+        'css-vars-docs.config',
+        'cssvarsdocs.config',
+        'cssvd.config',
+        'cvd.config'
+    ];
+
+    // Possible configuration file extensions
+    private extensions = ['js', 'cjs', 'mjs'];
+
+    private possibleConfigFiles: string[];
+
+    constructor(config: Partial<CssVarsDocsConfig> = {}) {
+        this.config = {
+            files: [],
+            newLinesBeforeGroup: false,
+            title: 'Used Variables in this file:',
+            blockIdentifier: 'CssVarsDocs :: generated',
+            logPrefix: 'CssVarsDocs :: ',
+            indent: '',
+            indentStyle: true,
+            prefixRegex: /^--([^-\s]+)/,
+            variableRegex: /--[\w-]+/g,
+            styleBlockRegex: /<style[^>]*>([\s\S]*?)<\/style>/i,
+            excludeNodeModules: true,
+            loadConfig: true,
+            logLevel: 2,
+            preview: false,
+            // Override default config with provided config
+            ...config
+        };
+
         // Store the provided configuration in a separate object to merge it with the loaded config
         this.constructorConfig = config;
 
-        this.log(3, `Constructor config: ${JSON.stringify(this.constructorConfig, null, 2)}\n`);
+        // Prepare all possible configuration file names
+        this.possibleConfigFiles = this.baseConfigNames.flatMap((base) =>
+            this.extensions.map((ext) => `${base}.${ext}`)
+        );
+
+        this.log(3, `Constructor config: ${JSON.stringify(this.constructorConfig)}`);
     }
 
     // Logs messages only if the log level is equal or higher than the provided level
-    log(level, message) {
-        // Preview mode should always show changes
-        if (this.config.preview && this.config.logLevel < 2) {
-            this.config.logLevel = 2;
-        }
+    private log(level: number, message: string): void {
+        if (this.config.preview && this.config.logLevel < 2) this.config.logLevel = 2;
 
         if (this.config.logLevel >= level) {
-            const previewPrefix = this.config.preview ? 'PREVIEW :: ' : '';
-            console.log(`${previewPrefix}${this.config.logPrefix}${message}`);
+            const prefix = this.config.preview ? 'PREVIEW :: ' : '';
+            console.log(`${prefix}${this.config.logPrefix}${message}`);
         }
     }
 
     // Loads configuration from a local file if it exists and merges it with the default settings
-    async loadConfig() {
+    private async loadConfig(): Promise<void> {
         for (const configFileName of this.possibleConfigFiles) {
             const configFilePath = path.resolve(process.cwd(), configFileName);
             if (fs.existsSync(configFilePath)) {
@@ -81,11 +111,7 @@ class CssVarsDocs {
     }
 
     // Prepares the configuration by loading the default, file-based, and constructor settings
-    async prepareConfig() {
-        // Disable logging if onlyChanges is enabled
-        this.config.showLog = this.config.showOnlyChanges ? false : this.config.showLog;
-
-        // Load configuration from a file
+    private async prepareConfig(): Promise<void> {
         if (this.config.loadConfig) {
             await this.loadConfig();
             // Override loaded config with provided settings from constructor
@@ -98,7 +124,7 @@ class CssVarsDocs {
     }
 
     // Checks if a file exists and logs an error if it doesn't
-    fileExists(file) {
+    private fileExists(file: string): boolean {
         if (!fs.existsSync(file)) {
             this.log(0, `${this.config.logPrefix}File not found: ${file}`);
             return false;
@@ -107,12 +133,12 @@ class CssVarsDocs {
     }
 
     // Resolves the absolute path of a file
-    absolutePath(file) {
+    private absolutePath(file: string): string {
         return path.resolve(file.replace(/\/+/g, '/'));
     }
 
     // Checks if a file is a CSS-related file based on its extension
-    isCssFile(sourceFile) {
+    private isCssFile(sourceFile: string): boolean {
         return (
             sourceFile.endsWith('.css') ||
             sourceFile.endsWith('.scss') ||
@@ -121,7 +147,7 @@ class CssVarsDocs {
     }
 
     // Counts leading spaces before the first <style> block to maintain indentation
-    countLeadingSpacesBeforeStyle(fileContent) {
+    private countLeadingSpacesBeforeStyle(fileContent: string): number {
         const styleLine = fileContent.split('\n').find((line) => line.includes('<style'));
         let count = 0;
         if (styleLine) {
@@ -132,8 +158,8 @@ class CssVarsDocs {
     }
 
     // Extracts all unique CSS variable names from the file content
-    extractCssVariableNames(fileContent) {
-        const variableNames = new Set();
+    private extractCssVariableNames(fileContent: string): string[] {
+        const variableNames = new Set<string>();
         let match;
         while ((match = this.config.variableRegex.exec(fileContent)) !== null) {
             variableNames.add(match[0]);
@@ -142,15 +168,15 @@ class CssVarsDocs {
     }
 
     // Groups variables by prefix
-    groupVariablesByPrefix(variableNames) {
-        const groupedVariables = [];
-        let currentPrefix = '';
-        let currentGroup = [];
-        let isFirstGroup = true;
+    private groupVariablesByPrefix(variableNames: string[]): string[] {
+        const groupedVariables: string[] = [];
+        let currentPrefix: string = '';
+        let currentGroup: string[] = [];
+        let isFirstGroup: boolean = true;
 
         variableNames.forEach((variable) => {
             const prefixMatch = variable.match(this.config.prefixRegex);
-            const prefix = prefixMatch ? prefixMatch[1] : '';
+            const prefix: string = prefixMatch ? prefixMatch[1] : '';
 
             if (prefix !== currentPrefix) {
                 if (currentGroup.length > 0) {
@@ -177,26 +203,33 @@ class CssVarsDocs {
     }
 
     // Finds the comment block in the content based on the block identifier
-    findCommentBlock(content, blockIdentifier) {
+    private findCommentBlock(content: string, blockIdentifier: string): CommentBlock {
         const blockIdentifierIndex = content.indexOf(blockIdentifier);
+
         if (blockIdentifierIndex === -1) {
             return { blockStartIndex: -1, blockEndIndex: -1, existingCommentBlock: '' };
         }
+
         const blockStartIndex = content.lastIndexOf('/*', blockIdentifierIndex);
         const blockEndIndex = content.indexOf('*/', blockIdentifierIndex) + 2;
         const existingCommentBlock = content.slice(blockStartIndex, blockEndIndex);
+
         return { blockStartIndex, blockEndIndex, existingCommentBlock };
     }
 
     // Creates a comment block containing grouped variables with optional indentation
-    createCommentBlock(groupedVariables, globalIndent = 0, indent = this.config.indent) {
+    private createCommentBlock(
+        groupedVariables: string[],
+        globalIndent: number = 0,
+        indent: string = this.config.indent
+    ): string {
         if (this.config.indentStyle) {
             globalIndent += globalIndent / 2;
         }
 
         const indentGlobal = ' '.repeat(globalIndent);
 
-        const lines = [
+        const lines: string[] = [
             `${indentGlobal}/*`,
             `${indentGlobal}${indent}${this.config.blockIdentifier}`,
             `${indentGlobal}${indent}${this.config.title}`,
@@ -208,8 +241,8 @@ class CssVarsDocs {
     }
 
     // Removes the comment block from the specified file
-    removeCommentBlock(sourceFile) {
-        let fileContent = fs.readFileSync(sourceFile, 'utf-8');
+    private removeCommentBlock(sourceFile: string): void {
+        let fileContent: string = fs.readFileSync(sourceFile, 'utf-8');
 
         // Check if the file contains the comment block
         const { blockStartIndex, blockEndIndex } = this.findCommentBlock(
@@ -225,11 +258,11 @@ class CssVarsDocs {
             }
 
             // Remove the identified comment block and any surrounding whitespace or newlines
-            const beforeBlock = fileContent.slice(0, blockStartIndex).trimEnd();
-            const afterBlock = fileContent.slice(blockEndIndex).replace(/^\s*\n/, '');
+            const beforeBlock: string = fileContent.slice(0, blockStartIndex).trimEnd();
+            const afterBlock: string = fileContent.slice(blockEndIndex).replace(/^\s*\n/, '');
 
             // Concatenate the content before and after the block, with any trailing whitespace removed
-            const updatedContent = `${beforeBlock}\n${afterBlock}`;
+            const updatedContent: string = `${beforeBlock}\n${afterBlock}`;
 
             fs.writeFileSync(sourceFile, updatedContent, 'utf-8');
             this.log(1, `Removed comment block from: ${sourceFile}`);
@@ -239,27 +272,33 @@ class CssVarsDocs {
     }
 
     // Adds or replaces the comment block containing CSS variables in the specified file
-    addOrReplaceVariableNamesComment(sourceFile) {
-        let fileContent = fs.readFileSync(sourceFile, 'utf-8');
-        let updatedContent = fileContent;
-        let currentVariableNames = [];
-        let existingCommentBlock = '';
-        let blockStartIndex, blockEndIndex;
+    private addOrReplaceVariableNamesComment(sourceFile: string): void {
+        let fileContent: string = fs.readFileSync(sourceFile, 'utf-8');
+        let updatedContent: string = fileContent;
+        let currentVariableNames: string[] = [];
+        let existingCommentBlock: string = '';
+        let blockStartIndex: number, blockEndIndex: number;
 
         if (this.isCssFile(sourceFile)) {
+            // CSS-File
             ({ blockStartIndex, blockEndIndex, existingCommentBlock } = this.findCommentBlock(
                 fileContent,
                 this.config.blockIdentifier
             ));
+
             if (blockStartIndex !== -1) {
                 fileContent =
                     fileContent.slice(0, blockStartIndex) + fileContent.slice(blockEndIndex);
             }
-            currentVariableNames = this.extractCssVariableNames(fileContent);
+
+            currentVariableNames = this.extractCssVariableNames(fileContent) as string[];
         } else {
+            // Files with <style>-Block
             const match = this.config.styleBlockRegex.exec(fileContent);
+
             if (match) {
-                let styleContent = match[1];
+                let styleContent: string = match[1];
+
                 ({ blockStartIndex, blockEndIndex, existingCommentBlock } = this.findCommentBlock(
                     styleContent,
                     this.config.blockIdentifier
@@ -270,23 +309,27 @@ class CssVarsDocs {
                         styleContent.slice(0, blockStartIndex) + styleContent.slice(blockEndIndex);
                     fileContent = fileContent.replace(match[1], styleContent);
                 }
-                currentVariableNames = this.extractCssVariableNames(styleContent);
+
+                currentVariableNames = this.extractCssVariableNames(styleContent) as string[];
             } else {
                 this.log(2, `No <style> block found - File skipped: ${sourceFile}.`);
                 return;
             }
         }
 
+        // Cancel if no CSS variables are found
         if (currentVariableNames.length === 0) {
             this.log(2, `No CSS variables found - File skipped: ${sourceFile}.`);
             return;
         }
 
-        const groupedVariables = this.groupVariablesByPrefix(currentVariableNames);
-        const existingVariableNames = existingCommentBlock
-            ? this.extractCssVariableNames(existingCommentBlock)
+        const groupedVariables: string[] = this.groupVariablesByPrefix(currentVariableNames);
+        const existingVariableNames: string[] = existingCommentBlock
+            ? (this.extractCssVariableNames(existingCommentBlock) as string[])
             : [];
-        const hasDifference =
+
+        // Check if the variable names have changed
+        const hasDifference: boolean =
             existingVariableNames.length !== currentVariableNames.length ||
             !existingVariableNames.every((v, i) => v === currentVariableNames[i]);
 
@@ -295,24 +338,26 @@ class CssVarsDocs {
             return;
         }
 
-        // Preview mode only shows the files that would be changed
+        // Preview-Modus: only show the files that would be changed
         if (this.config.preview) {
             this.log(1, `Update Comment block in: ${sourceFile}`);
             return;
         }
 
+        // Update the content with the new comment block
         if (this.isCssFile(sourceFile)) {
-            const newCommentBlock = this.createCommentBlock(groupedVariables);
+            const newCommentBlock: string = this.createCommentBlock(groupedVariables);
             updatedContent = newCommentBlock + '\n' + fileContent;
         } else {
-            const newCommentBlock = this.createCommentBlock(
+            const newCommentBlock: string = this.createCommentBlock(
                 groupedVariables,
                 this.countLeadingSpacesBeforeStyle(fileContent)
             );
-            const newStyleContent =
-                '\n' + newCommentBlock + '\n' + fileContent.match(this.config.styleBlockRegex)[1];
+
+            const newStyleContent: string =
+                '\n' + newCommentBlock + '\n' + fileContent.match(this.config.styleBlockRegex)![1];
             updatedContent = fileContent.replace(
-                fileContent.match(this.config.styleBlockRegex)[1],
+                fileContent.match(this.config.styleBlockRegex)![1],
                 newStyleContent
             );
         }
@@ -322,24 +367,26 @@ class CssVarsDocs {
     }
 
     // Clears all comment blocks from the specified file or all files based on the configuration
-    async clearFiles(sourceFile) {
+    public async clearFiles(sourceFile?: string): Promise<void> {
         await this.prepareConfig();
 
         if (sourceFile) {
-            const absolutePath = this.absolutePath(sourceFile);
+            const absolutePath: string = this.absolutePath(sourceFile);
             if (!this.fileExists(absolutePath)) {
                 return;
             }
             this.removeCommentBlock(absolutePath);
         } else {
-            const includePatterns = this.config.files.filter((pattern) => !pattern.startsWith('!'));
-            const excludePatterns = this.config.files
+            const includePatterns: string[] = this.config.files.filter(
+                (pattern) => !pattern.startsWith('!')
+            );
+            const excludePatterns: string[] = this.config.files
                 .filter((pattern) => pattern.startsWith('!'))
                 .map((pattern) => pattern.slice(1));
 
-            const files = includePatterns.flatMap((pattern) => globSync(pattern));
-            const filteredFiles = files.filter((file) => {
-                const inNodeModules = file.includes('node_modules');
+            const files: string[] = includePatterns.flatMap((pattern) => globSync(pattern));
+            const filteredFiles: string[] = files.filter((file) => {
+                const inNodeModules: boolean = file.includes('node_modules');
                 return (
                     (!inNodeModules || !this.config.excludeNodeModules) &&
                     !excludePatterns.some((excludePattern) => file.includes(excludePattern))
@@ -352,7 +399,7 @@ class CssVarsDocs {
             }
 
             filteredFiles.forEach((file) => {
-                const absolutePath = this.absolutePath(file);
+                const absolutePath: string = this.absolutePath(file);
                 if (this.fileExists(absolutePath)) {
                     this.removeCommentBlock(absolutePath);
                 }
@@ -361,24 +408,27 @@ class CssVarsDocs {
     }
 
     // Processes files either based on a specific sourceFile or the configured patterns
-    async processFiles(sourceFile) {
+    public async processFiles(sourceFile?: string): Promise<void> {
         await this.prepareConfig();
 
         if (sourceFile) {
-            const absolutePath = this.absolutePath(sourceFile);
+            const absolutePath: string = this.absolutePath(sourceFile);
             if (!this.fileExists(absolutePath)) {
                 return;
             }
             this.addOrReplaceVariableNamesComment(absolutePath);
         } else {
-            const includePatterns = this.config.files.filter((pattern) => !pattern.startsWith('!'));
-            const excludePatterns = this.config.files
+            const includePatterns: string[] = this.config.files.filter(
+                (pattern) => !pattern.startsWith('!')
+            );
+            const excludePatterns: string[] = this.config.files
                 .filter((pattern) => pattern.startsWith('!'))
                 .map((pattern) => pattern.slice(1));
-            // Filter out `node_modules` if `excludeNodeModules` is true
-            const files = includePatterns.flatMap((pattern) => globSync(pattern));
-            const filteredFiles = files.filter((file) => {
-                const inNodeModules = file.includes('node_modules');
+
+            // Collect all files based on patterns
+            const files: string[] = includePatterns.flatMap((pattern) => globSync(pattern));
+            const filteredFiles: string[] = files.filter((file) => {
+                const inNodeModules: boolean = file.includes('node_modules');
                 return (
                     (!inNodeModules || !this.config.excludeNodeModules) &&
                     !excludePatterns.some((excludePattern) => file.includes(excludePattern))
@@ -391,7 +441,7 @@ class CssVarsDocs {
             }
 
             filteredFiles.forEach((file) => {
-                const absolutePath = this.absolutePath(file);
+                const absolutePath: string = this.absolutePath(file);
                 if (this.fileExists(absolutePath)) {
                     this.addOrReplaceVariableNamesComment(absolutePath);
                 }
@@ -399,5 +449,3 @@ class CssVarsDocs {
         }
     }
 }
-
-module.exports = CssVarsDocs;

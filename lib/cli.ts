@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander');
-const pkg = require('../package.json');
-const CssVarsDocs = require('./css-vars-docs.cjs');
+import { Command } from 'commander';
+import pkg from '../package.json';
+import { CssVarsDocs, type CssVarsDocsOptions } from './css-vars-docs';
 
+// Extend the configuration with the `remove` property
+interface ExtendedCssVarsDocsOptions extends Partial<CssVarsDocsOptions> {
+    remove?: boolean; // Adds the `remove` flag for CLI
+}
+
+// Initialize Commander.js
 const program = new Command();
 
 // Define program with basic info
@@ -30,7 +36,7 @@ program
         '-b, --block-identifier <identifier>',
         'Unique identifier for generated blocks :: default: "CssVarsDocs"'
     )
-    .option('-i, --indent <indent>', 'Default indentation  :: default: ""')
+    .option('-i, --indent <indent>', "Default indentation :: default: ''")
     .option('-is, --indent-style', 'Add extra indentation in <style> blocks :: default: true')
     .option('-ex, --exclude-node-modules', 'Exclude `node_modules` by default :: default: true')
     .option('-lc, --load-config', 'Allow to load configuration file :: default: true')
@@ -43,9 +49,9 @@ program
 // Parse arguments
 program.parse(process.argv);
 
-const options = program.opts();
+const options = program.opts() as Partial<ExtendedCssVarsDocsOptions>;
 
-// If files option is provided, process and split by commas or spaces
+// Process and normalize `files` option
 if (options.files && options.files.length > 0) {
     options.files = options.files
         .join(' ') // Join all parts into a single string
@@ -54,7 +60,7 @@ if (options.files && options.files.length > 0) {
 }
 
 // Log options at verbose levels
-if (options.logLevel >= 2) {
+if ((options.logLevel ?? 2) >= 2) {
     console.log(`CLI :: options: ${JSON.stringify(options, null, 2)}\n`);
 }
 
@@ -62,4 +68,8 @@ if (options.logLevel >= 2) {
 const cssVarsDocs = new CssVarsDocs(options);
 
 // Process files or clear files based on `remove` flag
-options.remove ? cssVarsDocs.clearFiles() : cssVarsDocs.processFiles();
+if (options.remove) {
+    cssVarsDocs.clearFiles();
+} else {
+    cssVarsDocs.processFiles();
+}

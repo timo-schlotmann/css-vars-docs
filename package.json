@@ -26,14 +26,21 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "dev": "chokidar 'lib/*' -c 'npm run build'",
-        "build": "npm run build:clear && npm run build:uglify && copyfiles -u 1 lib/*.d.ts dist/",
+        "build": "npm run build:clear && npm run build:cjs && npm run build:esm && npm run build:rename && npm run build:uglify",
         "build:clear": "rimraf dist",
-        "build:uglify": "mkdir -p dist && uglifyjs lib/css-vars-docs.cjs -o dist/css-vars-docs.cjs --mangle --compress && uglifyjs lib/cli.cjs -o dist/cli.cjs --mangle --compress && uglifyjs lib/postcss-plugin.cjs -o dist/postcss-plugin.cjs --mangle --compress && uglifyjs lib/vite-plugin.cjs -o dist/vite-plugin.cjs --mangle --compress",
+        "build:cjs": "tsc -p tsconfig.cjs.json",
+        "build:esm": "tsc -p tsconfig.esm.json",
+        "build:rename": "npm run rename:cjs && npm run rename:esm",
+        "rename:cjs": "find dist/cjs -name '*.js' -exec sh -c 'mv \"$1\" \"${1%.js}.cjs\"' _ {} \\;",
+        "rename:esm": "find dist/esm -name '*.js' -exec sh -c 'mv \"$1\" \"${1%.js}.mjs\"' _ {} \\;",
+        "build:uglify": "npm run uglify:cjs && npm run uglify:esm",
+        "uglify:cjs": "uglifyjs dist/cjs/css-vars-docs.cjs -o dist/cjs/css-vars-docs.cjs --mangle --compress && uglifyjs dist/cjs/cli.cjs -o dist/cjs/cli.cjs --mangle --compress && uglifyjs dist/cjs/postcss-plugin.cjs -o dist/cjs/postcss-plugin.cjs --mangle --compress && uglifyjs dist/cjs/vite-plugin.cjs -o dist/cjs/vite-plugin.cjs --mangle --compress",
+        "uglify:esm": "uglifyjs dist/esm/css-vars-docs.mjs -o dist/esm/css-vars-docs.mjs --mangle --compress && uglifyjs dist/esm/cli.mjs -o dist/esm/cli.mjs --mangle --compress && uglifyjs dist/esm/postcss-plugin.mjs -o dist/esm/postcss-plugin.mjs --mangle --compress && uglifyjs dist/esm/vite-plugin.mjs -o dist/esm/vite-plugin.mjs --mangle --compress",
         "test": "jest",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "dev": "tsc --watch -p tsconfig.cjs.json"
     },
     "dependencies": {
         "commander": "12.1.0",
@@ -44,6 +51,9 @@
     },
     "devDependencies": {
         "@semantic-release/changelog": "6.0.3",
+        "@types/commander": "^2.12.5",
+        "@types/glob": "^8.1.0",
+        "@types/node": "^22.10.2",
         "chokidar-cli": "3.0.0",
         "copyfiles": "2.4.1",
         "eslint": "9.14.0",
@@ -53,7 +63,9 @@
         "prettier": "3.3.3",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.0",
-        "uglify-js": "3.19.3"
+        "typescript": "^5.7.2",
+        "uglify-js": "3.19.3",
+        "vite": "^6.0.3"
     },
     "keywords": [
         "css",
