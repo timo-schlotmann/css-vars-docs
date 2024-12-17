@@ -9,15 +9,23 @@
         "cssvd": "dist/cli.cjs"
     },
     "exports": {
-        ".": "./dist/cli.cjs",
-        "./postcss-plugin": "./dist/postcss-plugin.cjs",
-        "./vite-plugin": {
-            "require": "./dist/vite-plugin.cjs",
-            "default": "./dist/vite-plugin.cjs",
-            "types": "./dist/vite-plugin.d.ts"
+        ".": {
+            "import": "./dist/esm/css-vars-docs.mjs",
+            "require": "./dist/cjs/css-vars-docs.cjs",
+            "types": "./dist/cjs/css-vars-docs.d.ts"
         },
-        "./css-vars-docs": "./dist/css-vars-docs.cjs",
-        "./cli": "./dist/cli.cjs"
+        "./cli": {
+            "import": "./dist/esm/cli.mjs",
+            "require": "./dist/cjs/cli.cjs"
+        },
+        "./postcss-plugin": {
+            "import": "./dist/esm/postcss-plugin.mjs",
+            "require": "./dist/cjs/postcss-plugin.cjs"
+        },
+        "./vite-plugin": {
+            "import": "./dist/esm/vite-plugin.mjs",
+            "require": "./dist/cjs/vite-plugin.cjs"
+        }
     },
     "files": [
         "dist",
@@ -44,6 +52,7 @@
     },
     "dependencies": {
         "commander": "12.1.0",
+        "cross-spawn": "^7.0.6",
         "glob": "11.0.0"
     },
     "peerDependencies": {
@@ -51,9 +60,9 @@
     },
     "devDependencies": {
         "@semantic-release/changelog": "6.0.3",
-        "@types/commander": "^2.12.5",
-        "@types/glob": "^8.1.0",
-        "@types/node": "^22.10.2",
+        "@types/commander": "2.12.5",
+        "@types/glob": "8.1.0",
+        "@types/node": "20.11.27",
         "chokidar-cli": "3.0.0",
         "copyfiles": "2.4.1",
         "eslint": "9.14.0",
@@ -63,9 +72,9 @@
         "prettier": "3.3.3",
         "rimraf": "6.0.1",
         "semantic-release": "24.2.0",
-        "typescript": "^5.7.2",
+        "typescript": "5.7.2",
         "uglify-js": "3.19.3",
-        "vite": "^6.0.3"
+        "vite": "6.0.3"
     },
     "keywords": [
         "css",
