@@ -1,4 +1,4 @@
-const CssVarsDocs = require('../lib/css-vars-docs.cjs');
+import { CssVarsDocs } from '../lib/css-vars-docs';
 
 test('Generates comment block correctly in css files', () => {
     const cssVarsDocs = new CssVarsDocs();

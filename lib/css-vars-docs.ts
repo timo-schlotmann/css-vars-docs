@@ -28,8 +28,8 @@ export type CommentBlock = {
 };
 
 export class CssVarsDocs {
-    private config: CssVarsDocsConfig;
-    private constructorConfig: Partial<CssVarsDocsConfig> = {};
+    public config: CssVarsDocsConfig;
+    public constructorConfig: Partial<CssVarsDocsConfig> = {};
 
     // Possible configuration file names
     private baseConfigNames = [
@@ -111,7 +111,7 @@ export class CssVarsDocs {
     }
 
     // Prepares the configuration by loading the default, file-based, and constructor settings
-    private async prepareConfig(): Promise<void> {
+    public async prepareConfig(): Promise<void> {
         if (this.config.loadConfig) {
             await this.loadConfig();
             // Override loaded config with provided settings from constructor
@@ -158,7 +158,7 @@ export class CssVarsDocs {
     }
 
     // Extracts all unique CSS variable names from the file content
-    private extractCssVariableNames(fileContent: string): string[] {
+    public extractCssVariableNames(fileContent: string): string[] {
         const variableNames = new Set<string>();
         let match;
         while ((match = this.config.variableRegex.exec(fileContent)) !== null) {
@@ -218,7 +218,7 @@ export class CssVarsDocs {
     }
 
     // Creates a comment block containing grouped variables with optional indentation
-    private createCommentBlock(
+    public createCommentBlock(
         groupedVariables: string[],
         globalIndent: number = 0,
         indent: string = this.config.indent
