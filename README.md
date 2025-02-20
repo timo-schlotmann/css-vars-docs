@@ -162,6 +162,7 @@ export default defineConfig({
         cssVarsDocsVite({
             delay: 200, // Delay between file processing
             extensions: ['.css', '.vue'], // Files to process
+            exclude: ['variables.css'] // Exclude files to process
             config: {
                 logLevel: 2,
                 preview: false

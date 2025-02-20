@@ -3,6 +3,7 @@ import { CssVarsDocs, type CssVarsDocsOptions } from './css-vars-docs';
 interface CssVarsDocsViteOptions {
     delay?: number; // Delay between processing the same file (in milliseconds)
     extensions?: string[]; // Allowed file extensions for processing
+    exclude?: string[]; // Files to exclude from processing
     config?: CssVarsDocsOptions; // Configuration options for css-vars-docs
 }
 
@@ -10,6 +11,7 @@ export default function cssVarsDocsVite(userOptions: CssVarsDocsViteOptions = {}
     const defaultOptions: CssVarsDocsViteOptions = {
         delay: 200,
         extensions: ['.css', '.scss', '.less', '.vue', '.html'],
+        exclude: [],
         config: {}
     };
 
@@ -23,6 +25,10 @@ export default function cssVarsDocsVite(userOptions: CssVarsDocsViteOptions = {}
         async handleHotUpdate({ file, server }: { file: string; server: any }) {
             // Skip files that do not match the allowed extensions
             if (options.extensions && !options.extensions.some((ext) => file.endsWith(ext))) {
+                return;
+            }
+
+            if (options.exclude && options.exclude.some((pattern) => file.includes(pattern))) {
                 return;
             }
 
