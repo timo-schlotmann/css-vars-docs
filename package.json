@@ -55,7 +55,7 @@
     },
     "dependencies": {
         "commander": "12.1.0",
-        "glob": "11.0.0"
+        "glob": "11.1.0"
     },
     "peerDependencies": {
         "postcss": "8.4.49"
@@ -78,6 +78,10 @@
         "ts-jest": "^29.2.5",
         "typescript": "5.7.2",
         "uglify-js": "3.19.3"
+    },
+    "overrides": {
+        "js-yaml": "3.14.2",
+        "brace-expansion": "2.0.2"
     },
     "keywords": [
         "css",
